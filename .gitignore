@@ -52,3 +52,36 @@ CodeCoverage/
 *.VisualState.xml
 TestResult.xml
 nunit-*.xml
+
+
+**/.vs/
+**/.vscode/
+**/.idea/
+**/bin/
+**/obj/
+**/out/
+**/node_modules/
+**/dist/
+
+# User-specific files
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*.lock
+*.cache
+*.mdb
+*.pdb
+*.ilk
+*.aps
+*.ncb
+*.opendb
+*.obj
+*.tlog
+*.pyc

@@ -1,6 +1,13 @@
 using Blazor.Components;
+using Blazor.Services;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Blazor bootstrap services registration
+builder.Services.AddBlazorBootstrap();
+
+// Registration of service as singleton
+builder.Services.AddSingleton<TaskService>();
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
