@@ -1,0 +1,132 @@
+@inject TaskService TaskService
+
+<div class="kanban-column">
+    <div class="kanban-column-header">
+        @if (isEditing)
+        {
+            <input @bind="taskListModel.Name"
+                   @onblur="SaveTaskListName"
+                   @bind:event="oninput"
+                   @onkeypress="HandleKeyPress"
+                   @ref="taskListInput"
+                   class="task-list-input"
+                   autofocus />
+        }
+        else
+        {
+            <h4 @ondblclick="StartEditing">@taskListModel.Name</h4>
+        }
+        <Button @onclick="() => OnRemoveTaskList.InvokeAsync(taskListModel.Name)" 
+                Color="ButtonColor.Danger" 
+                Size="ButtonSize.Small">
+            <Icon Name="IconName.X" />
+        </Button>
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(errorMessage))
+    {
+       <div class="error">@errorMessage</div>
+    }
+
+    <div class="task-list">
+        @foreach (var task in taskListModel.Tasks)
+        {
+            <TaskItem Task="task" OnTaskSelected="ShowDetails" />
+        }
+    </div>
+
+    <!-- Přidání nového úkolu -->
+    <div class="task-add-area">
+        @if (showAddTaskListInput)
+        {
+            <AddTaskForm OnTaskAdded="AddTask"/>
+        }
+        else
+        {
+            <Button @onclick="ShowAddTaskListInput" 
+                    Color="ButtonColor.Primary" 
+                    Size="ButtonSize.Small"
+                    Class="btn-add-task">
+                <Icon Name="IconName.Plus" /> Přidat úkol
+            </Button>
+        }
+    </div>
+</div>
+
+<TaskItemDetails Task="selectedTask" OnClose="CloseDetails" OnMoveTask="OnMoveTask" OnRemove="RemoveTask" TaskLists="TaskLists" />
+
+@code {
+    [Parameter]
+    public TaskListModel taskListModel { get; set; } = new();
+
+    [Parameter]
+    public List<TaskListModel> TaskLists { get; set; } = new();
+
+    [Parameter]
+    public EventCallback<(TaskModel task, string targetTaskListName)> OnMoveTask { get; set; }
+
+    [Parameter]
+    public EventCallback<string> OnRemoveTaskList { get; set; }
+
+    private bool isEditing = false;
+    private ElementReference taskListInput;
+    private string errorMessage = string.Empty;
+    private bool showAddTaskListInput = false;
+
+    private TaskModel? selectedTask = null;
+
+    private async Task StartEditing()
+    {
+        isEditing = true;
+        await Task.Delay(50);
+        await taskListInput.FocusAsync();
+    }
+
+    private void ShowAddTaskListInput()
+    {
+        showAddTaskListInput = true;
+    }
+
+    private void HideAddTaskListInput()
+    {
+        showAddTaskListInput = false;
+    }
+
+    private void SaveTaskListName()
+    {
+        try 
+        {
+            TaskService.UpdateTaskListName(taskListModel);
+            isEditing = false;
+            errorMessage = string.Empty; // Resetujeme chybu, pokud vše proběhlo ok
+        }
+        catch (ArgumentException ex) {
+            errorMessage = ex.Message;
+        }
+        catch (InvalidOperationException ex) {
+            errorMessage = ex.Message;
+        }
+    }
+
+    private void HandleKeyPress(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            SaveTaskListName();
+        }
+    }
+
+    private void RemoveTask(TaskModel task)
+    {
+        TaskService.RemoveTask(taskListModel, task);
+    }
+
+    private void ShowDetails(TaskModel task) => selectedTask = task;
+    private void CloseDetails() => selectedTask = null;
+
+    private void AddTask(string newTaskText)
+    {
+        TaskService.AddTask(taskListModel.Name, newTaskText);
+        HideAddTaskListInput();
+    }
+}

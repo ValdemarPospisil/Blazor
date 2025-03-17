@@ -1,0 +1,141 @@
+@if (Task != null)
+{
+    <div class="task-details-sidebar">
+        <div class="sidebar-header mb-3 d-flex justify-content-between align-items-center">
+            <h4 class="m-0">Task Details</h4>
+            <Button Color="ButtonColor.Light" Class="rounded-circle" Size="ButtonSize.Small" @onclick="Close">
+                <i class="bi bi-x-lg"></i>
+            </Button>
+        </div>
+
+        <div class="sidebar-content">
+            @if (isEditing)
+            {
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Task Name</label>
+                    <input @bind="Task.Text" class="form-control" placeholder="Enter task name" />
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Description</label>
+                    <textarea @bind="Task.Description" class="form-control" rows="4" placeholder="Enter task description"></textarea>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Due Date</label>
+                    <input type="date" @bind="Task.DueDate" class="form-control" />
+                </div>
+            }
+            else
+            {
+                <div class="mb-3">
+                    <Badge Color="BadgeColor.Primary" Class="mb-2">@Task.TaskListName</Badge>
+                    <h3 class="mb-2">@Task.Text</h3>
+                    <div class="task-due-date mb-3">
+                        <i class="bi bi-calendar me-1"></i>
+                        <span class="@GetDueDateClass()">Due: @Task.DueDate.ToString("MMM dd, yyyy")</span>
+                    </div>
+                    <div class="task-description p-3 bg-light rounded">
+                        @if (!string.IsNullOrWhiteSpace(Task.Description))
+                        {
+                            <p class="mb-0">@Task.Description</p>
+                        }
+                        else
+                        {
+                            <p class="text-muted mb-0 fst-italic">No description provided</p>
+                        }
+                    </div>
+                </div>
+            }
+
+            <div class="task-actions mt-4">
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Move to List</label>
+                    <div class="d-flex gap-2">
+                        <select @bind="selectedTaskListName" class="form-select">
+                            @foreach (var taskList in TaskLists)
+                            {
+                                <option value="@taskList.Name">@taskList.Name</option>
+                            }
+                        </select>
+                        <Button @onclick="MoveTask" Color="ButtonColor.Primary" Size="ButtonSize.Small">
+                            <i class="bi bi-arrow-right-square me-1"></i> Move
+                        </Button>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-between mt-4">
+                    <Button @onclick="ToggleEditMode" Color="ButtonColor.Secondary">
+                        <i class="bi bi-@(isEditing ? "check-lg" : "pencil")"></i>
+                        @editModeText
+                    </Button>
+                    <Button @onclick="RemoveTask" Color="ButtonColor.Danger">
+                        <i class="bi bi-trash me-1"></i>
+                        Remove
+                    </Button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public TaskModel Task { get; set; } = new TaskModel();
+    [Parameter] public EventCallback OnClose { get; set; }
+    [Parameter] public EventCallback<(TaskModel task, string targetTaskListName)> OnMoveTask { get; set; }
+    [Parameter] public EventCallback<TaskModel> OnRemove { get; set; }
+    [Parameter] public List<TaskListModel> TaskLists { get; set; } = new List<TaskListModel>();
+
+    private string selectedTaskListName = "ToDo";
+    private bool isEditing = false;
+    private string editModeText = "Edit";
+
+    protected override void OnParametersSet()
+    {
+        if (Task != null)
+        {
+            selectedTaskListName = Task.TaskListName;
+        }
+        isEditing = false;
+        editModeText = isEditing ? "Save" : "Edit";
+    }
+
+    private void Close() 
+    {
+        OnClose.InvokeAsync();
+    } 
+
+    private void ToggleEditMode()
+    {
+        isEditing = !isEditing;
+        editModeText = isEditing ? "Save" : "Edit";
+    }
+
+    private async Task MoveTask()
+    {
+        await OnMoveTask.InvokeAsync((Task, selectedTaskListName));
+        Close();
+    }
+
+    private async Task RemoveTask()
+    {
+        if (Task != null)
+        {
+            await OnRemove.InvokeAsync(Task);
+            Close();
+        }
+    }
+    
+    private string GetDueDateClass()
+    {
+        if (Task.DueDate < DateTime.Today)
+        {
+            return "text-danger fw-bold";
+        }
+        else if (Task.DueDate == DateTime.Today)
+        {
+            return "text-warning fw-bold";
+        }
+        return "text-muted";
+    }
+}

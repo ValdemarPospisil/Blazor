@@ -1,0 +1,87 @@
+@page "/todo"
+@inject TaskService TaskService
+
+<PageTitle>Task Board</PageTitle>
+
+<div class="d-flex align-items-center justify-content-between mb-3">
+    <h3 class="mb-0">Task Board</h3>
+    <div class="d-flex gap-2">
+        <Button @onclick="() => SaveDataAsync()" Color="ButtonColor.Success">
+            <Icon Name="IconName.Save" /> Save Tasks
+        </Button>
+        <Button @onclick="() => LoadDataAsync()" Color="ButtonColor.Warning">
+            <Icon Name="IconName.Upload" /> Load Tasks
+        </Button>
+    </div>
+</div>
+
+<!-- Kanban board -->
+<div class="task-list-container">
+    @foreach (var taskList in GetTaskLists())
+    {
+        <TaskList taskListModel="taskList"
+                 TaskLists="@GetTaskLists()"
+                 OnMoveTask="HandleMoveTask"
+                 OnRemoveTaskList="RemoveTaskList" />
+    }
+
+    <!-- Add new TaskList column -->
+    <div class="add-task-list-column">
+        @if (showAddTaskListInput)
+        {
+            <AddTaskListForm OnTaskListAdded="HandleTaskListAdded" ExistingTaskLists="@GetTaskLists()" />
+        }
+        else
+        {
+            <Button @onclick="ShowAddTaskListInput" 
+                    Color="ButtonColor.Primary" 
+                    Size="ButtonSize.Medium"
+                    Class="w-100 d-flex align-items-center justify-content-center">
+                <Icon Name="IconName.Plus" Class="me-2" /> Přidat seznam
+            </Button>
+        }
+    </div>
+</div>
+
+@code {
+    private void HandleTaskListAdded(string newTaskListName)
+    {
+        TaskService.AddTaskList(newTaskListName);
+        HideAddTaskListInput();
+    }
+
+    private List<TaskListModel> GetTaskLists()
+    {
+        return TaskService.GetTaskLists();
+    }
+
+    private bool showAddTaskListInput = false;
+    private void ShowAddTaskListInput()
+    {
+        showAddTaskListInput = true;
+    }
+    private void HideAddTaskListInput()
+    {
+        showAddTaskListInput = false;
+    }
+
+    private void HandleMoveTask((TaskModel task, string targetTaskList) moveTask)
+    {
+        TaskService.MoveTask(moveTask.task, moveTask.targetTaskList);
+    }
+
+    private void RemoveTaskList(string taskList)
+    {
+        TaskService.RemoveTaskList(taskList);
+    }
+
+    private async Task LoadDataAsync()
+    {
+        await TaskService.LoadTasksAsync();
+    }
+
+    private async Task SaveDataAsync()
+    {
+        await TaskService.SaveTasksAsync();
+    }
+}

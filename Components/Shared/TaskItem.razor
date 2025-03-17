@@ -1,0 +1,8 @@
+<div class="task-item">
+    <span @onclick="() => OnTaskSelected.InvokeAsync(Task)" class="clickable">@Task.Text</span>
+</div>
+
+@code {
+    [Parameter] public EventCallback<TaskModel> OnTaskSelected { get; set; }
+    [Parameter] public TaskModel Task { get; set; } = new TaskModel();
+}
