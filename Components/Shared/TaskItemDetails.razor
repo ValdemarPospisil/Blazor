@@ -3,7 +3,7 @@
     <div class="task-details-sidebar">
         <div class="sidebar-header mb-3 d-flex justify-content-between align-items-center">
             <h4 class="m-0">Task Details</h4>
-            <Button Color="ButtonColor.Light" Class="rounded-circle" Size="ButtonSize.Small" @onclick="Close">
+            <Button Color="ButtonColor.Light" Class="rounded-circle" Size="ButtonSize.Small" @onclick="OnClose">
                 <i class="bi bi-x-lg"></i>
             </Button>
         </div>
@@ -100,11 +100,6 @@
         editModeText = isEditing ? "Save" : "Edit";
     }
 
-    private void Close() 
-    {
-        OnClose.InvokeAsync();
-    } 
-
     private void ToggleEditMode()
     {
         isEditing = !isEditing;
@@ -114,7 +109,7 @@
     private async Task MoveTask()
     {
         await OnMoveTask.InvokeAsync((Task, selectedTaskListName));
-        Close();
+        await OnClose.InvokeAsync();
     }
 
     private async Task RemoveTask()
@@ -122,7 +117,7 @@
         if (Task != null)
         {
             await OnRemove.InvokeAsync(Task);
-            Close();
+            await OnClose.InvokeAsync();
         }
     }
     

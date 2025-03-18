@@ -1,23 +1,51 @@
 [
   {
     "Name": "ToDo",
-    "Tasks": []
-  },
-  {
-    "Name": "mnkn",
     "Tasks": [
       {
-        "Text": "jm njnmjn mj ",
+        "Text": "Presentation",
         "TaskListName": "ToDo",
-        "Description": "Write your own description",
-        "DueDate": "2025-03-17T17:33:11.0807085+01:00"
+        "Description": "Make a presentation on why is blazor way better than javascript.",
+        "DueDate": "2025-03-27T00:00:00"
       },
       {
-        "Text": " njknnki njm n",
-        "TaskListName": "mnkn",
-        "Description": "Write your own descriptionnjmn mj n",
-        "DueDate": "2025-03-17T17:33:06.6521327+01:00"
+        "Text": "Hard task",
+        "TaskListName": "ToDo",
+        "Description": "Make a task with a hard dificulty for students to complete",
+        "DueDate": "2025-03-27T00:00:00"
       }
     ]
+  },
+  {
+    "Name": "In Progress",
+    "Tasks": [
+      {
+        "Text": "Easy task",
+        "TaskListName": "In Progress",
+        "Description": "Make a task with an easy dificulty for students to complete",
+        "DueDate": "2025-03-27T00:00:00"
+      },
+      {
+        "Text": "Medium task",
+        "TaskListName": "In Progress",
+        "Description": "Make a task with a medium dificulty for students to complete",
+        "DueDate": "2025-03-09T12:20:57.9567881+01:00"
+      }
+    ]
+  },
+  {
+    "Name": "In Review",
+    "Tasks": [
+      {
+        "Text": "Demo app",
+        "TaskListName": "In Review",
+        "Description": "Make an demonstrative app that will show students how great blazor is. It will also serve as an handbook for students to help them with tasks.",
+        "DueDate": "2025-03-27T00:00:00"
+      }
+    ]
+  },
+  {
+    "Name": "Done",
+    "Tasks": []
   }
 ]
