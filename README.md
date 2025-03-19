@@ -84,7 +84,7 @@ dotnet watch run
 
 ---
 
-## Sequence diagram
+## Sekvenční diagram
 
 ```mermaid
 sequenceDiagram
@@ -200,7 +200,7 @@ else
 
 *🔹 Zpracování události přidání seznamu*
 
-```razor
+```csharp
 private void HandleTaskListAdded(string newTaskListName)
 {
     TaskService.AddTaskList(newTaskListName);
