@@ -1,12 +1,18 @@
 **Blazor**
 
-Projekt pro předmět GUI zaměřený .NET Blazor
+# Projekt pro předmět GUI zaměřený .NET Blazor
+<details>
+<summary>Založení projektu pomocí CMD</summary>
 
-# Založení projektu pomocí CMD
-```
+```bash
     dotnet new blazor -n [název_projektu] -f net8.0
 ```
-# Založení pomocí Visual studia
+
+</details>
+
+<details>
+    <summary>Založení pomocí Visual studia</summary>
+
 * Výběr templatu
 ![Výber šablony](docs/images/vscreate.png)
 
@@ -15,12 +21,74 @@ Projekt pro předmět GUI zaměřený .NET Blazor
 
 * Technická specifika projektu
 ![Specifika projektu](docs/images/vscreatethree.png)
+</details>
 
----
 
 # Blazor TODO Aplikace
 
 Tato aplikace je jednoduchý **TODO seznam** vytvořený v Blazor Server. Umožňuje uživateli přidávat, upravovat, mazat a přesouvat úkoly mezi seznamy.
+
+## Požadavky pro spuštění projektu
+ - .NET 8 SDK
+ - IDE nebo textový editor (doporučujeme VSCode s C# Dev Kit)
+
+### Instalace pro různé operační systémy
+
+<details>
+
+<summary>Windows</summary>
+    
+ - Stažení: https://dotnet.microsoft.com/en-us/download/dotnet/8.0
+ - Instalátor se postará o konfiguraci prostředí.
+ - Ověřit instalaci:
+```powershell
+dotnet --version
+```
+</details>
+
+<details>
+<summary>Linux</summary>
+
+ - Ubuntu/Debian
+```bash
+sudo apt update && sudo apt install -y dotnet-sdk-8.0
+```
+ - Arch Linux
+```bash
+sudo pacman -S dotnet-sdk
+```
+ - Void Linux
+```bash
+sudo xbps-install -S dotnet-sdk
+```
+ - Fedora
+```bash
+sudo dnf install dotnet-sdk-8.0
+```
+ - openSUSE
+```bash
+sudo zypper install dotnet-sdk-8.0
+```
+ - Ověření instalace
+```bash
+dotnet --version
+```
+</details>
+
+<details>
+<summary>MacOS</summary>
+
+ - Instalace .NET 8 SDK
+```bash
+brew install dotnet-sdk
+```
+ - Ověření instalace
+```bash
+dotnet --version
+```
+</details>
+
+
 
 ## Jak spustit projekt
 1. Naklonuj repozitář:
