@@ -249,3 +249,326 @@ Vytvoř novou Blazor stránku, která umožní uživateli:
 - Ulož poznámky do **`List<string>`** a vykresli je pomocí **`@foreach`**.
 
 </details>
+
+---
+
+
+# Cvičení 2: Galerie obrázků
+Vytvoř Blazor stránku, která umožní:
+1. **Načíst obrázky**
+2. **Vykreslit obrázky**
+3. **Prohlédnout konkrétní obrázek**
+4. **Klávesové ovládání prohlížení obrázků**
+4. **Subúkol**: mansory rozložení pomocí blazoru a čistého css
+
+
+<details>
+  <summary>💡 Nápověda</summary>
+
+- Obrázky načítej pomocí **Service** a vykresluj pomocí cyklu v **HTML** značkách
+- Pro otevření obrázku vytvoř overlay přes existující galerii
+- pro klávesové ovládání budeš potřebovat registrovat vstupy z klávesnice pomocí **`KeyboardEventArgs`**
+</details>
+
+<details>
+  <summary>Část řešení</summary>
+
+1. Vytvoříme si razor stránku, kde budeme naší galerii volat
+```razor
+@page "/gallery"
+
+<h3>Galerie</h3>
+
+<ImageGrid />
+```
+
+2. Vytvoříme komponentu `ImageGrid.razor`
+    - název je volitelný, ale potřeba upravit i v předešlém kroku
+
+    <details>
+        <summary>Kód</summary>
+
+    ```csharp
+    @code {
+        private List<string> images = new List<string>();
+        private int selectedIndex = -1;
+        private ElementReference overlayElement;
+        private string? path;
+
+
+        protected override async Task OnInitializedAsync()
+        {
+            if (path == null)
+            {
+                images = await ImageService.GetImagePathsAsync("wwwroot/images/gallery");
+            }
+            else 
+            { 
+                images = await ImageService.GetImagePathsAsync(path);
+            }
+        }
+
+        private async Task OpenImage(int index)
+        {
+            selectedIndex = index;
+            StateHasChanged();
+            await FocusOverlay();
+        }
+
+        private async Task FocusOverlay()
+        {
+            if (selectedIndex != -1)
+            {
+                await Task.Delay(50);
+                await overlayElement.FocusAsync();
+            }
+        }
+
+        private void CloseImage()
+        {
+            selectedIndex = -1;
+        }
+
+        private void PreviousImage()
+        {
+            if (selectedIndex > 0)
+            {
+                selectedIndex--;
+                StateHasChanged();
+            }
+            else
+            {
+                selectedIndex = images.Count - 1;
+                StateHasChanged();
+            }
+        }
+
+        private void NextImage()
+        {
+            if (selectedIndex < images.Count - 1)
+            {
+                selectedIndex++;
+                StateHasChanged();
+            }
+            else
+            {
+                selectedIndex = 0;
+                StateHasChanged();
+            }
+        }
+
+        private async Task HandleKeyDown(KeyboardEventArgs e)
+        {
+            if (selectedIndex != -1)
+            {
+                if (e.Key == "ArrowLeft")
+                {
+                    PreviousImage();
+                }
+                else if (e.Key == "ArrowRight")
+                {
+                    NextImage();
+                }
+                else if (e.Key == "Escape")
+                {
+                    CloseImage();
+                }
+                await InvokeAsync(StateHasChanged);
+            }
+        }
+    }
+    ```
+    </details>
+
+    ## Kód je zde trochu delší, ale pojďme si ho rozklíčovat:
+
+    ### `OnInitializedAsync`
+    - Spouští se automaticky při inicializaci komponenty.
+
+    ### `OpenImage`
+    - Otevře náhled konkrétního obrázku.
+
+    ### `FocusOverlay`
+    - Zaostří overlay prvek kvůli ovládání klávesnicí.
+
+    ### `CloseImage`
+    - Zavře náhled obrázku (overlay).
+
+    ### `PreviousImage`
+    - Posune výběr na předchozí obrázek.
+
+    ### `NextImage`
+    - Posune výběr na další obrázek.
+
+    ### `HandleKeyDown`
+    - Zpracovává stisknuté klávesy při aktivním overlay.
+
+    ## Stále v naší komponentě udělejme strukturu stránky:
+
+
+    <details>
+        <summary>Kód</summary>
+
+
+    ```csharp
+    @if (images.Count == 0)
+    {
+        <p>Žádné obrázky nejsou k dispozici.</p>
+    }
+    else
+    {
+        <div class="gallery">
+            @foreach (var img in images.Select((path, index) => new { path, index })) 
+            {
+                <div class="gallery-item">
+                    <img src="@img.path" @onclick="() => OpenImage(img.index)" /> <!-- Creation of individual image and assigning open method -->
+                </div>
+            }
+        </div>
+    }
+
+    @if (selectedIndex != -1)
+    {
+        <div class="gal-overlay" tabindex="0" @onkeydown="HandleKeyDown" @ref="overlayElement">
+            <button class="gal-nav-btn left" @onclick="PreviousImage">&#9665;</button>
+
+            <img src="@images[selectedIndex]" @onclick="CloseImage" />
+
+            <button class="gal-nav-btn right" @onclick="NextImage">&#9655;</button>
+        </div>
+    }
+    ``` 
+    </details>
+
+    ## Stále v naší komponentě udělejme vzhled stránky:
+
+
+    <details>
+        <summary>Kód</summary>
+
+    ```css
+    <style>
+        .gallery {
+            column-count: 5;
+            column-gap: 1rem;
+            padding: 1rem;
+        }
+        @@media (max-width: 1200px) {
+            .gallery {
+                column-count: 4;
+            }
+        }
+
+        @@media (max-width: 992px) {
+            .gallery {
+                column-count: 3;
+            }
+        }
+
+        @@media (max-width: 768px) {
+            .gallery {
+                column-count: 2;
+            }
+        
+        }
+
+        .gallery-item {
+            break-inside: avoid;
+            margin-bottom: 1rem;
+            background-color: #f8f8f8;
+            border-radius: 0.5rem;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .gallery-item img {
+            width: 100%;
+            display: block;
+        }
+
+        .gallery img {
+            transition: transform 0.2s;
+        }
+
+        .gallery img:hover {
+            transform: scale(1.05);
+        }
+
+        .gal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .gal-overlay img {
+            max-width: 80%;
+            max-height: 80%;
+            border-radius: 10px;
+        }
+
+        .gal-nav-btn {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255, 255, 255, 0.5);
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 10px;
+            border-radius: 50%;
+        }
+
+        .gal-nav-btn.left {
+            left: 20px;
+        }
+
+        .gal-nav-btn.right {
+            right: 20px;
+        }
+    </style>
+    ```
+    </details>
+
+    ## Stránku máme téměř hotovu, ale nezapoměňme na obrázky:
+    - Založíme si ve složce `Services` službu `ImagesService.cs`
+
+    <details>
+        <summary>Kód</summary>
+
+
+    ```csharp
+
+        public class ImageService
+        {
+            public Task<List<string>> GetImagePathsAsync(string path)
+            {
+                var images = new List<string>();
+
+                if (Directory.Exists(path))
+                {
+                    var files = Directory.GetFiles(path, "*.jpg"); 
+                    foreach (var file in files)
+                    {
+                        images.Add($"images/gallery/{Path.GetFileName(file)}");
+                    }
+                }
+
+                return Task.FromResult(images);
+            }
+        }
+    ```
+    - Service najde všechny `.jpg` fotky v dané složce a ukládá jejich cesty do `List<string>`
+    </details>
+
+    ## Poslední 2 kroky
+    - Aby naše `Service` fungovala jak má je potřeba ji registrivat v `Program.cs` souboru a propojit ji s naší komponentou `ImageGrid.razor`
+    ### Registrace:
+    ```csharp
+    builder.Services.AddSingleton<ImageService>();
+    ```
