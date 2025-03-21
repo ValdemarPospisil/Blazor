@@ -174,130 +174,118 @@ sequenceDiagram
 
 
 
-## Ukázky kódu pro přidání seznamu úkolů
+## Přidání funkce pro přesouvání úkolů mezi seznamy
 
-### 1. Komponenta AddTaskListForm.razor (Formulář pro přidání seznamu úkolů)
+V této části doplníme funkcionalitu umožňující přesouvání úkolů mezi seznamy v naší Blazor aplikaci.
 
+### 1. Přidání metody `MoveTask` do `TaskService.cs`
+Nejprve vytvoříme metodu, která se postará o přesun úkolu mezi seznamy.
 
-#### 🔹 Co dělá?
- -  Tato komponenta umožňuje uživateli vytvořit nový seznam úkolů. Obsahuje input pole pro zadání názvu seznamu a tlačítko pro potvrzení.
-#### Rozbor kódu
+**Soubor:** `TaskService.cs`
 
-#### 🔹 Vstupní pole a tlačítko
-
-```razor
-<input @bind="newTaskListName" placeholder="Zadejte název seznamu" @bind:event="oninput" @onkeypress="HandleKeyPress" />
-<Button @onclick="AddTaskList" Color="ButtonColor.Primary">Přidat seznam</Button>
-```
- - `@bind="newTaskListName"` → Obousměrné datové vazby, propojuje vstupní pole s proměnnou `newTaskListName`.
- - `@bind:event="oninput"` → Aktualizuje hodnotu při každém zadání textu.
- - `@onkeypress="HandleKeyPress"` → Pokud uživatel stiskne Enter, spustí se metoda `AddTaskList()`.
- - Tlačítko `@onclick="AddTaskList"` → Po kliknutí zavolá metodu `AddTaskList()`.
-
-#### 🔹 Ošetření chyb
-```razor
-@if (!string.IsNullOrEmpty(errorMessage))
+```csharp
+public void MoveTask(TaskModel task, string targetTaskListName)
 {
-    <p class="error">@errorMessage</p>
-}
-```
-- Pokud je `errorMessage` vyplněna, zobrazí se chybová zpráva.
+    var sourceTaskList = taskLists.FirstOrDefault(tl => tl.Name == task.TaskListName);
 
-#### 🔹 Metoda `AddTaskList()`
-
-```razor
-private async Task AddTaskList()
-{
-    if (string.IsNullOrWhiteSpace(newTaskListName))
+    if (sourceTaskList != null)
     {
-        errorMessage = "Název seznamu nemůže být prázdný.";
-        return;
-    }
-
-    if (ExistingTaskLists.Any(tl => tl.Name.Equals(newTaskListName, StringComparison.OrdinalIgnoreCase)))
-    {
-        errorMessage = $"Seznam '{newTaskListName}' již existuje!";
-        return;
-    }
-
-    await OnTaskListAdded.InvokeAsync(newTaskListName);
-    newTaskListName = string.Empty;
-    errorMessage = null; // Resetujeme chybu
-}
-```
- - Kontroluje, jestli je název seznamu vyplněn.
- - Porovnává názvy seznamů (aby nedošlo k duplicitě).
- - Vyvolá událost `OnTaskListAdded`, která předá nový název seznamu rodičovské komponentě.
- - Resetuje hodnoty (`newTaskListName` a `errorMessage`).
-
-#### 🔹 Reakce na stisknutí Enter
-```razor
-private async Task HandleKeyPress(KeyboardEventArgs e)
-{
-    if (e.Key == "Enter")
-    {
-        await AddTaskList();
+        var targetTaskList = taskLists.FirstOrDefault(tl => tl.Name == targetTaskListName);
+        if (targetTaskList != null)
+        {
+            sourceTaskList.Tasks.Remove(task);
+            targetTaskList.Tasks.Add(task);
+            task.TaskListName = targetTaskListName;
+        }
     }
 }
 ```
- - Pokud uživatel stiskne Enter, zavolá se metoda `AddTaskList()`.
+ - `FirstOrDefault()` → Vyhledává první prvek v seznamu, který splňuje podmínku. Pokud žádný nenajde, vrátí `null`.
+ - **Najdeme původní seznam** (`sourceTaskList`), ve kterém se úkol momentálně nachází.
+ - **Najdeme cílový seznam** (`targetTaskList`), do kterého chceme úkol přesunout.
+ - Pokud oba seznamy existují:
+     - **Odstraníme úkol** ze starého seznamu: `sourceTaskList.Tasks.Remove(task);`
+     - **Přidáme úkol** do nového seznamu: `targetTaskList.Tasks.Add(task);`
+     - **Aktualizujeme název seznamu** v úkolu (`task.TaskListName = targetTaskListName;`)
 
-### 2. Komponenta Todo.razor (Hlavní stránka s Todo seznamy)
-*🔹 Co dělá?*
- - Spravuje zobrazení seznamů úkolů a umožňuje přidání nového seznamu.
-### Rozbor kódu
- *- Podmíněné zobrazení formuláře*
+
+### 2. Volání MoveTask v Todo.razor
+Nyní vytvoříme metodu, která bude volat `MoveTask` z `TaskService`.
+**Soubor**: `Todo.razor`
+```csharp
+private void HandleMoveTask((TaskModel task, string targetTaskList) moveTask)
+{
+    TaskService.MoveTask(moveTask.task, moveTask.targetTaskList);
+}
+```
+- Tato metoda bude sloužit jako handler pro přesun úkolu.
+
+
+### 3. Přidání podpory pro přesun úkolů do `TaskList.razor`
+V TaskList.razor potřebujeme předat metodu HandleMoveTask dětem (TaskItemDetails), aby mohly úkol přesunout.
+
+**Soubor**: `TaskItemDetails.razor`
+
 ```razor
-@if (showAddTaskListInput)
-{
-    <AddTaskListForm OnTaskListAdded="HandleTaskListAdded" ExistingTaskLists="@GetTaskLists()" />
-}
-else
-{
-    <Button @onclick="ShowAddTaskListInput" 
-            Color="ButtonColor.Primary" 
-            Size="ButtonSize.Medium"
-            Class="w-100 d-flex align-items-center justify-content-center">
-        <Icon Name="IconName.Plus" Class="me-2" /> Přidat seznam
-    </Button>
+<TaskItemDetails Task="selectedTask" OnClose="CloseDetails" 
+                 OnMoveTask="OnMoveTask" OnRemove="RemoveTask" TaskLists="TaskLists" />
+
+@code {
+    [Parameter]
+    public EventCallback<(TaskModel task, string targetTaskListName)> OnMoveTask { get; set; }
 }
 ```
-- Pokud `showAddTaskListInput` je true, zobrazí se `AddTaskListForm`.
-- Jinak se zobrazí tlačítko Přidat seznam, které zavolá `ShowAddTaskListInput()`.
+ - Přidali jsme nový `[Parameter]` `OnMoveTask`, což je event, který umožní TaskItemDetails zavolat metodu v rodiči (TaskList).
 
+### 4. Implementace přesunu v `TaskItemDetails.razor`
+V `TaskItemDetails.razor` musíme přidat UI pro výběr cílového seznamu a tlačítko pro přesun.
 
-*🔹 Zpracování události přidání seznamu*
+**Soubor**: `TaskItemDetails.razor`
 
-```csharp
-private void HandleTaskListAdded(string newTaskListName)
-{
-    TaskService.AddTaskList(newTaskListName);
-    HideAddTaskListInput();
+```razor
+<div class="task-actions mt-4">
+    <div class="mb-3">
+        <label class="form-label fw-bold">Move to List</label>
+        <div class="d-flex gap-2">
+            <select @bind="selectedTaskListName" class="form-select">
+                @foreach (var taskList in TaskLists)
+                {
+                    <option value="@taskList.Name">@taskList.Name</option>
+                }
+            </select>
+            <Button @onclick="MoveTask" Color="ButtonColor.Primary" Size="ButtonSize.Small">
+                <i class="bi bi-arrow-right-square me-1"></i> Move
+            </Button>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public TaskModel Task { get; set; }
+    [Parameter] public List<TaskListModel> TaskLists { get; set; }
+    [Parameter] public EventCallback<(TaskModel task, string targetTaskListName)> OnMoveTask { get; set; }
+
+    private string selectedTaskListName;
+
+    protected override void OnParametersSet()
+    {
+        selectedTaskListName = Task.TaskListName;
+    }
+
+    private async Task MoveTask()
+    {
+        await OnMoveTask.InvokeAsync((Task, selectedTaskListName));
+        await OnClose.InvokeAsync();
+    }
 }
 ```
- - Zavolá `TaskService.AddTaskList()`, který přidá nový seznam úkolů.
- - Skryje vstupní formulář.
+ - Dropdown menu (`<select>`) obsahuje seznam existujících TaskListů, kam lze úkol přesunout.
+ - Proměnná `selectedTaskListName` uchovává vybraný cíl přesunu.
+ - Metoda `MoveTask()`:
+     - Volá `OnMoveTask.InvokeAsync()` → předává informace rodiči (`TaskList`).
+     - Po úspěšném přesunu zavolá `OnClose.InvokeAsync()`, aby se zavřelo okno detailu úkolu.
+ - Použití `OnParametersSet()` → Když se změní `[Parameter] Task`, nastavíme `selectedTaskListName` na aktuální seznam, kde se úkol nachází.
 
-### 3. TaskService.cs (Správa seznamů úkolů a úkolů)
-*🔹 Co dělá?*
-- Spravuje logiku přidávání seznamů úkolů.
-
-*Rozbor kódu*
-
-*🔹 Uložení seznamů úkolů*
-```csharp
-private List<TaskListModel> taskLists = new List<TaskListModel>();
-```
- - Uchovává všechny seznamy úkolů v aplikaci.
-
-*🔹 Přidání nového seznamu úkolů*
-```csharp
-public void AddTaskList(string name)
-{
-    taskLists.Add(new TaskListModel { Name = name });
-}
-```
-- Vytvoří nový `TaskListModel` se zadaným názvem a přidá ho do seznamu `taskLists`.
 
 ---
 
