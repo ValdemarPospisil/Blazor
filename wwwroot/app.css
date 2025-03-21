@@ -94,7 +94,7 @@ h1:focus {
 /* Kanban Column Styles */
 /* ==================== */
 .kanban-column {
-    width: 280px;
+    width: 250px;
     height: 460px; 
     border: 1px solid #ccc;
     padding: 16px;
@@ -130,7 +130,7 @@ h1:focus {
 }
 
 .add-task-list-column {
-    width: 280px; /* Same width as other columns */
+    width: 250px; /* Same width as other columns */
     height: 460px; /* Same height as other columns */
     border: 2px dashed #ccc;
     background-color: #f9f9f9;

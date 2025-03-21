@@ -68,29 +68,7 @@ namespace Blazor.Services
             }
         }
 
-        /*
-        Metoda pro přesunutí úkolu do jiného seznamu úkolů
-        - Pokud existuje zdrojový seznam úkolů, odebere se úkol ze zdrojového seznamu
-        - Pokud existuje cílový seznam úkolů, přidá se úkol do cílového seznamu
-        Method for moving a task to another list of tasks
-        - If there is a source task list, the task is removed from the source task list
-        - If there is a target task list, the task is added to the target task list
-        */
-        public void MoveTask(TaskModel task, string targetTaskListName)
-        {
-            var sourceTaskList = taskLists.FirstOrDefault(tl => tl.Name == task.TaskListName);
-
-            if (sourceTaskList != null)
-            {
-                var targetTaskList = taskLists.FirstOrDefault(tl => tl.Name == targetTaskListName);
-                if (targetTaskList != null)
-                {
-                    sourceTaskList.Tasks.Remove(task);
-                    targetTaskList.Tasks.Add(task);
-                    task.TaskListName = targetTaskListName;
-                }
-            }
-        }
+        
 
         /*
         Metoda pro smazání seznamu úkolů podle názvu
@@ -118,7 +96,6 @@ namespace Blazor.Services
         - If there is a task list with the original name, the name of that task list is updated
         */
 
-        // TODO ponder wheter to use this function at all or not
         public void UpdateTaskListName(TaskListModel updatedTaskList)
         {
             if (string.IsNullOrWhiteSpace(updatedTaskList.Name))

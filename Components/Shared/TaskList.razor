@@ -53,21 +53,11 @@
     </div>
 </div>
 
-<TaskItemDetails Task="selectedTask" OnClose="CloseDetails" OnMoveTask="OnMoveTask" OnRemove="RemoveTask" TaskLists="TaskLists" />
+<TaskItemDetails Task="selectedTask" OnClose="CloseDetails" OnRemove="RemoveTask" />
 
 @code {
-    [Parameter]
-    public TaskListModel taskListModel { get; set; } = new();
-
-    [Parameter]
-    public List<TaskListModel> TaskLists { get; set; } = new();
-
-    [Parameter]
-    public EventCallback<(TaskModel task, string targetTaskListName)> OnMoveTask { get; set; }
-
-    [Parameter]
-    public EventCallback<string> OnRemoveTaskList { get; set; }
-
+    [Parameter] public TaskListModel taskListModel { get; set; } = new();
+    [Parameter] public EventCallback<string> OnRemoveTaskList { get; set; }
     private bool isEditing = false;
     private ElementReference taskListInput;
     private string errorMessage = string.Empty;

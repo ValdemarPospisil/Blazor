@@ -20,8 +20,6 @@
     @foreach (var taskList in GetTaskLists())
     {
         <TaskList taskListModel="taskList"
-                 TaskLists="@GetTaskLists()"
-                 OnMoveTask="HandleMoveTask"
                  OnRemoveTaskList="RemoveTaskList" />
     }
 
@@ -63,11 +61,6 @@
     private void HideAddTaskListInput()
     {
         showAddTaskListInput = false;
-    }
-
-    private void HandleMoveTask((TaskModel task, string targetTaskList) moveTask)
-    {
-        TaskService.MoveTask(moveTask.task, moveTask.targetTaskList);
     }
 
     private void RemoveTaskList(string taskList)

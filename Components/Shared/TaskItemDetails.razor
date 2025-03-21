@@ -48,21 +48,6 @@
                 </div>
             }
 
-            <div class="task-actions mt-4">
-                <div class="mb-3">
-                    <label class="form-label fw-bold">Move to List</label>
-                    <div class="d-flex gap-2">
-                        <select @bind="selectedTaskListName" class="form-select">
-                            @foreach (var taskList in TaskLists)
-                            {
-                                <option value="@taskList.Name">@taskList.Name</option>
-                            }
-                        </select>
-                        <Button @onclick="MoveTask" Color="ButtonColor.Primary" Size="ButtonSize.Small">
-                            <i class="bi bi-arrow-right-square me-1"></i> Move
-                        </Button>
-                    </div>
-                </div>
 
                 <div class="d-flex justify-content-between mt-4">
                     <Button @onclick="ToggleEditMode" Color="ButtonColor.Secondary">
@@ -74,7 +59,6 @@
                         Remove
                     </Button>
                 </div>
-            </div>
         </div>
     </div>
 }
@@ -82,9 +66,7 @@
 @code {
     [Parameter] public TaskModel Task { get; set; } = new TaskModel();
     [Parameter] public EventCallback OnClose { get; set; }
-    [Parameter] public EventCallback<(TaskModel task, string targetTaskListName)> OnMoveTask { get; set; }
     [Parameter] public EventCallback<TaskModel> OnRemove { get; set; }
-    [Parameter] public List<TaskListModel> TaskLists { get; set; } = new List<TaskListModel>();
 
     private string selectedTaskListName = "ToDo";
     private bool isEditing = false;
@@ -104,12 +86,6 @@
     {
         isEditing = !isEditing;
         editModeText = isEditing ? "Save" : "Edit";
-    }
-
-    private async Task MoveTask()
-    {
-        await OnMoveTask.InvokeAsync((Task, selectedTaskListName));
-        await OnClose.InvokeAsync();
     }
 
     private async Task RemoveTask()
