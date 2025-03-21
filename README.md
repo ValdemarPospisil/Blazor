@@ -100,7 +100,7 @@ cd Blazor/
 ```bash
 dotnet watch run
 ```
-3. Otevři v prohlížeči *http://localhost:5000*
+3. Otevři v prohlížeči *http://localhost:5257*
 
 ---
 
