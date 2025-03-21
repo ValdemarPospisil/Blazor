@@ -354,83 +354,37 @@ Vytvoř Blazor stránku, která umožní:
 
         protected override async Task OnInitializedAsync()
         {
-            if (path == null)
-            {
-                images = await ImageService.GetImagePathsAsync("wwwroot/images/gallery");
-            }
-            else 
-            { 
-                images = await ImageService.GetImagePathsAsync(path);
-            }
+            ...;
         }
 
         private async Task OpenImage(int index)
         {
-            selectedIndex = index;
-            StateHasChanged();
-            await FocusOverlay();
+            ...;
         }
 
         private async Task FocusOverlay()
         {
-            if (selectedIndex != -1)
-            {
-                await Task.Delay(50);
-                await overlayElement.FocusAsync();
-            }
+            ...;
         }
 
         private void CloseImage()
         {
-            selectedIndex = -1;
+            ...;
         }
 
         private void PreviousImage()
         {
-            if (selectedIndex > 0)
-            {
-                selectedIndex--;
-                StateHasChanged();
-            }
-            else
-            {
-                selectedIndex = images.Count - 1;
-                StateHasChanged();
-            }
+            ...;
         }
 
         private void NextImage()
         {
-            if (selectedIndex < images.Count - 1)
-            {
-                selectedIndex++;
-                StateHasChanged();
-            }
-            else
-            {
-                selectedIndex = 0;
-                StateHasChanged();
-            }
+            ...;
         }
 
         private async Task HandleKeyDown(KeyboardEventArgs e)
         {
-            if (selectedIndex != -1)
-            {
-                if (e.Key == "ArrowLeft")
-                {
-                    PreviousImage();
-                }
-                else if (e.Key == "ArrowRight")
-                {
-                    NextImage();
-                }
-                else if (e.Key == "Escape")
-                {
-                    CloseImage();
-                }
-                await InvokeAsync(StateHasChanged);
-            }
+            ...;
         }
     }
     ```
@@ -477,7 +431,7 @@ Vytvoř Blazor stránku, která umožní:
             @foreach (var img in images.Select((path, index) => new { path, index })) 
             {
                 <div class="gallery-item">
-                    <img src="@img.path" @onclick="() => OpenImage(img.index)" /> <!-- Creation of individual image and assigning open method -->
+                    <img src="@img.path" @onclick="() => OpenImage(img.index)" />
                 </div>
             }
         </div>
@@ -590,41 +544,3 @@ Vytvoř Blazor stránku, která umožní:
     </style>
     ```
     </details>
-
-    ## Stránku máme téměř hotovu, ale nezapoměňme na obrázky:
-    - Založíme si ve složce `Services` službu `ImagesService.cs`
-
-    <details>
-        <summary>Kód</summary>
-
-
-    ```csharp
-
-        public class ImageService
-        {
-            public Task<List<string>> GetImagePathsAsync(string path)
-            {
-                var images = new List<string>();
-
-                if (Directory.Exists(path))
-                {
-                    var files = Directory.GetFiles(path, "*.jpg"); 
-                    foreach (var file in files)
-                    {
-                        images.Add($"images/gallery/{Path.GetFileName(file)}");
-                    }
-                }
-
-                return Task.FromResult(images);
-            }
-        }
-    ```
-    - Service najde všechny `.jpg` fotky v dané složce a ukládá jejich cesty do `List<string>`
-    </details>
-
-    ## Poslední 2 kroky
-    - Aby naše `Service` fungovala jak má je potřeba ji registrivat v `Program.cs` souboru a propojit ji s naší komponentou `ImageGrid.razor`
-    ### Registrace:
-    ```csharp
-    builder.Services.AddSingleton<ImageService>();
-    ```
