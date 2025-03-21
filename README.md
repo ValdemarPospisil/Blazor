@@ -1,6 +1,6 @@
 **Blazor**
 
-# Projekt pro předmět GUI zaměřený .NET Blazor
+# Projekt pro předmět GUI zaměřený na .NET Blazor
 <details>
 <summary>Založení projektu pomocí CMD</summary>
 
@@ -28,9 +28,9 @@
 
 Tato aplikace je jednoduchý **TODO seznam** vytvořený v Blazor Server. Umožňuje uživateli přidávat, upravovat, mazat a přesouvat úkoly mezi seznamy.
 
-## Požadavky pro spuštění projektu
+## Požadavky
  - .NET 8 SDK
- - IDE nebo textový editor (doporučujeme VSCode s C# Dev Kit)
+ - IDE nebo textový editor (doporučujeme VSCode)
 
 ### Instalace pro různé operační systémy
 
