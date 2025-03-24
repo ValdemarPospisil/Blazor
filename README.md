@@ -162,12 +162,24 @@ sequenceDiagram
     participant TaskService as TaskService.cs
 
     User->>TaskList: Klikne na tlačítko "+ Přidat úkol"
-    TaskList-->>User: Zobrazí AddTaskForm komponentu
-    User->>AddTaskForm: Napíše Task název a klikne na "Přidat úkol"
-    AddTaskForm->>TaskList: await OnTaskAdded.InvokeAsync(newTaskText);
-    TaskList->>TaskService: TaskService.AddTask(taskListModel.Name, newTaskText);
-    TaskService-->>TaskList: Aktualizuje seznam úkolů
-    TaskList-->>User: Zobrazí aktualizovaný seznam úkolů
+    TaskList->>User: Zobrazí AddTaskForm komponentu
+    User->>AddTaskForm: Napíše název úkolu a klikne na "Přidat úkol"
+    
+    alt Název úkolu není prázdný
+        AddTaskForm->>TaskList: OnTaskAdded.InvokeAsync(newTaskText) (EventCallback)
+        Note right of AddTaskForm: Vyvolání události pro TaskList
+        
+        TaskList->>TaskService: AddTask(taskListModel.Name, newTaskText)
+        Note right of TaskService: Vytvoření instance TaskModel
+        TaskService-->>TaskList: Vrátí aktualizovaný seznam úkolů
+        
+        TaskList->>TaskList: HideAddTaskListInput()
+        Note right of TaskList: Skrytí formuláře pro přidání úkolu
+        
+        TaskList-->>User: Zobrazí aktualizovaný seznam úkolů
+    else Název úkolu je prázdný
+        AddTaskForm-->>User: Zobrazí chybovou hlášku "Název úkolu nesmí být prázdný."
+    end
 ```
 
 ---
@@ -181,7 +193,7 @@ V této části doplníme funkcionalitu umožňující přesouvání úkolů mez
 ### 1. Přidání metody `MoveTask` do `TaskService.cs`
 Nejprve vytvoříme metodu, která se postará o přesun úkolu mezi seznamy.
 
-**Soubor:** `TaskService.cs`
+📄 **Soubor:** `TaskService.cs`
 
 ```csharp
 public void MoveTask(TaskModel task, string targetTaskListName)
@@ -211,7 +223,9 @@ public void MoveTask(TaskModel task, string targetTaskListName)
 
 ### 2. Volání MoveTask v Todo.razor
 Nyní vytvoříme metodu, která bude volat `MoveTask` z `TaskService`.
-**Soubor**: `Todo.razor`
+
+📄 **Soubor**: `Todo.razor`
+
 ```csharp
 private void HandleMoveTask((TaskModel task, string targetTaskList) moveTask)
 {
@@ -224,7 +238,7 @@ private void HandleMoveTask((TaskModel task, string targetTaskList) moveTask)
 ### 3. Přidání podpory pro přesun úkolů do `TaskList.razor`
 V TaskList.razor potřebujeme předat metodu HandleMoveTask dětem (TaskItemDetails), aby mohly úkol přesunout.
 
-**Soubor**: `TaskItemDetails.razor`
+📄 **Soubor**: `TaskItemDetails.razor`
 
 ```razor
 <TaskItemDetails Task="selectedTask" OnClose="CloseDetails" 
@@ -240,7 +254,7 @@ V TaskList.razor potřebujeme předat metodu HandleMoveTask dětem (TaskItemDeta
 ### 4. Implementace přesunu v `TaskItemDetails.razor`
 V `TaskItemDetails.razor` musíme přidat UI pro výběr cílového seznamu a tlačítko pro přesun.
 
-**Soubor**: `TaskItemDetails.razor`
+📄 **Soubor**: `TaskItemDetails.razor`
 
 ```razor
 <div class="task-actions mt-4">
