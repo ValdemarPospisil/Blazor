@@ -100,7 +100,7 @@ cd Blazor/
 ```bash
 dotnet watch run
 ```
-3. Otevři v prohlížeči *http://localhost:5000*
+3. Otevři v prohlížeči *http://localhost:5257*
 
 ---
 
@@ -162,12 +162,24 @@ sequenceDiagram
     participant TaskService as TaskService.cs
 
     User->>TaskList: Klikne na tlačítko "+ Přidat úkol"
-    TaskList-->>User: Zobrazí AddTaskForm komponentu
-    User->>AddTaskForm: Napíše Task název a klikne na "Přidat úkol"
-    AddTaskForm->>TaskList: await OnTaskAdded.InvokeAsync(newTaskText);
-    TaskList->>TaskService: TaskService.AddTask(taskListModel.Name, newTaskText);
-    TaskService-->>TaskList: Aktualizuje seznam úkolů
-    TaskList-->>User: Zobrazí aktualizovaný seznam úkolů
+    TaskList->>User: Zobrazí AddTaskForm komponentu
+    User->>AddTaskForm: Napíše název úkolu a klikne na "Přidat úkol"
+    
+    alt Název úkolu není prázdný
+        AddTaskForm->>TaskList: OnTaskAdded.InvokeAsync(newTaskText) (EventCallback)
+        Note right of AddTaskForm: Vyvolání události pro TaskList
+        
+        TaskList->>TaskService: AddTask(taskListModel.Name, newTaskText)
+        Note right of TaskService: Vytvoření instance TaskModel
+        TaskService-->>TaskList: Vrátí aktualizovaný seznam úkolů
+        
+        TaskList->>TaskList: HideAddTaskListInput()
+        Note right of TaskList: Skrytí formuláře pro přidání úkolu
+        
+        TaskList-->>User: Zobrazí aktualizovaný seznam úkolů
+    else Název úkolu je prázdný
+        AddTaskForm-->>User: Zobrazí chybovou hlášku "Název úkolu nesmí být prázdný."
+    end
 ```
 
 ---
@@ -181,7 +193,7 @@ V této části doplníme funkcionalitu umožňující přesouvání úkolů mez
 ### 1. Přidání metody `MoveTask` do `TaskService.cs`
 Nejprve vytvoříme metodu, která se postará o přesun úkolu mezi seznamy.
 
-**Soubor:** `TaskService.cs`
+📄 **Soubor:** `TaskService.cs`
 
 ```csharp
 public void MoveTask(TaskModel task, string targetTaskListName)
@@ -211,7 +223,9 @@ public void MoveTask(TaskModel task, string targetTaskListName)
 
 ### 2. Volání MoveTask v Todo.razor
 Nyní vytvoříme metodu, která bude volat `MoveTask` z `TaskService`.
-**Soubor**: `Todo.razor`
+
+📄 **Soubor**: `Todo.razor`
+
 ```csharp
 private void HandleMoveTask((TaskModel task, string targetTaskList) moveTask)
 {
@@ -224,7 +238,7 @@ private void HandleMoveTask((TaskModel task, string targetTaskList) moveTask)
 ### 3. Přidání podpory pro přesun úkolů do `TaskList.razor`
 V TaskList.razor potřebujeme předat metodu HandleMoveTask dětem (TaskItemDetails), aby mohly úkol přesunout.
 
-**Soubor**: `TaskItemDetails.razor`
+📄 **Soubor**: `TaskItemDetails.razor`
 
 ```razor
 <TaskItemDetails Task="selectedTask" OnClose="CloseDetails" 
@@ -240,7 +254,7 @@ V TaskList.razor potřebujeme předat metodu HandleMoveTask dětem (TaskItemDeta
 ### 4. Implementace přesunu v `TaskItemDetails.razor`
 V `TaskItemDetails.razor` musíme přidat UI pro výběr cílového seznamu a tlačítko pro přesun.
 
-**Soubor**: `TaskItemDetails.razor`
+📄 **Soubor**: `TaskItemDetails.razor`
 
 ```razor
 <div class="task-actions mt-4">
@@ -354,83 +368,37 @@ Vytvoř Blazor stránku, která umožní:
 
         protected override async Task OnInitializedAsync()
         {
-            if (path == null)
-            {
-                images = await ImageService.GetImagePathsAsync("wwwroot/images/gallery");
-            }
-            else 
-            { 
-                images = await ImageService.GetImagePathsAsync(path);
-            }
+            ...;
         }
 
         private async Task OpenImage(int index)
         {
-            selectedIndex = index;
-            StateHasChanged();
-            await FocusOverlay();
+            ...;
         }
 
         private async Task FocusOverlay()
         {
-            if (selectedIndex != -1)
-            {
-                await Task.Delay(50);
-                await overlayElement.FocusAsync();
-            }
+            ...;
         }
 
         private void CloseImage()
         {
-            selectedIndex = -1;
+            ...;
         }
 
         private void PreviousImage()
         {
-            if (selectedIndex > 0)
-            {
-                selectedIndex--;
-                StateHasChanged();
-            }
-            else
-            {
-                selectedIndex = images.Count - 1;
-                StateHasChanged();
-            }
+            ...;
         }
 
         private void NextImage()
         {
-            if (selectedIndex < images.Count - 1)
-            {
-                selectedIndex++;
-                StateHasChanged();
-            }
-            else
-            {
-                selectedIndex = 0;
-                StateHasChanged();
-            }
+            ...;
         }
 
         private async Task HandleKeyDown(KeyboardEventArgs e)
         {
-            if (selectedIndex != -1)
-            {
-                if (e.Key == "ArrowLeft")
-                {
-                    PreviousImage();
-                }
-                else if (e.Key == "ArrowRight")
-                {
-                    NextImage();
-                }
-                else if (e.Key == "Escape")
-                {
-                    CloseImage();
-                }
-                await InvokeAsync(StateHasChanged);
-            }
+            ...;
         }
     }
     ```
@@ -477,7 +445,7 @@ Vytvoř Blazor stránku, která umožní:
             @foreach (var img in images.Select((path, index) => new { path, index })) 
             {
                 <div class="gallery-item">
-                    <img src="@img.path" @onclick="() => OpenImage(img.index)" /> <!-- Creation of individual image and assigning open method -->
+                    <img src="@img.path" @onclick="() => OpenImage(img.index)" />
                 </div>
             }
         </div>
@@ -590,41 +558,3 @@ Vytvoř Blazor stránku, která umožní:
     </style>
     ```
     </details>
-
-    ## Stránku máme téměř hotovu, ale nezapoměňme na obrázky:
-    - Založíme si ve složce `Services` službu `ImagesService.cs`
-
-    <details>
-        <summary>Kód</summary>
-
-
-    ```csharp
-
-        public class ImageService
-        {
-            public Task<List<string>> GetImagePathsAsync(string path)
-            {
-                var images = new List<string>();
-
-                if (Directory.Exists(path))
-                {
-                    var files = Directory.GetFiles(path, "*.jpg"); 
-                    foreach (var file in files)
-                    {
-                        images.Add($"images/gallery/{Path.GetFileName(file)}");
-                    }
-                }
-
-                return Task.FromResult(images);
-            }
-        }
-    ```
-    - Service najde všechny `.jpg` fotky v dané složce a ukládá jejich cesty do `List<string>`
-    </details>
-
-    ## Poslední 2 kroky
-    - Aby naše `Service` fungovala jak má je potřeba ji registrivat v `Program.cs` souboru a propojit ji s naší komponentou `ImageGrid.razor`
-    ### Registrace:
-    ```csharp
-    builder.Services.AddSingleton<ImageService>();
-    ```
