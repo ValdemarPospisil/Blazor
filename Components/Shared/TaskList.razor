@@ -32,6 +32,7 @@
         @foreach (var task in taskListModel.Tasks)
         {
             <TaskItem Task="task" OnTaskSelected="ShowDetails" />
+            
         }
     </div>
 
@@ -39,7 +40,7 @@
     <div class="task-add-area">
         @if (showAddTaskListInput)
         {
-            <AddTaskForm OnTaskAdded="AddTask"/>
+            <AddForm OnSubmit="AddTask" PlaceholderText="Zadejte název úkolu" ButtonText="Přidat úkol" />
         }
         else
         {

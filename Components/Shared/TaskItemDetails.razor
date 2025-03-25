@@ -68,16 +68,11 @@
     [Parameter] public EventCallback OnClose { get; set; }
     [Parameter] public EventCallback<TaskModel> OnRemove { get; set; }
 
-    private string selectedTaskListName = "ToDo";
     private bool isEditing = false;
     private string editModeText = "Edit";
 
     protected override void OnParametersSet()
     {
-        if (Task != null)
-        {
-            selectedTaskListName = Task.TaskListName;
-        }
         isEditing = false;
         editModeText = isEditing ? "Save" : "Edit";
     }

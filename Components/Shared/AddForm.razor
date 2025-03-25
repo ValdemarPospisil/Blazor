@@ -1,0 +1,53 @@
+<div class="add-form">
+    <input @bind="inputText" placeholder="@PlaceholderText" @bind:event="oninput" @onkeypress="HandleKeyPress" />
+    <Button @onclick="Submit" Color="ButtonColor.Primary">@ButtonText</Button>
+
+    @if (!string.IsNullOrWhiteSpace(errorMessage))
+    {
+        <div class="error">@errorMessage</div>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public EventCallback<string> OnSubmit { get; set; } // Obecný callback pro Task i TaskList
+
+    [Parameter]
+    public string PlaceholderText { get; set; } = "Zadejte název"; // Mění se podle kontextu
+
+    [Parameter]
+    public string ButtonText { get; set; } = "Přidat"; // Přizpůsobené tlačítko
+
+    [Parameter]
+    public List<string>? ExistingNames { get; set; } // Pro kontrolu duplicity u seznamů
+
+    private string inputText = string.Empty;
+    private string? errorMessage;
+
+    private async Task Submit()
+    {
+        if (string.IsNullOrWhiteSpace(inputText))
+        {
+            errorMessage = "Název nesmí být prázdný.";
+            return;
+        }
+
+        if (ExistingNames != null && ExistingNames.Any(name => name.Equals(inputText, StringComparison.OrdinalIgnoreCase)))
+        {
+            errorMessage = $"'{inputText}' již existuje!";
+            return;
+        }
+
+        await OnSubmit.InvokeAsync(inputText);
+        inputText = string.Empty;
+        errorMessage = null; // Reset chyby
+    }
+
+    private async Task HandleKeyPress(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            await Submit();
+        }
+    }
+}

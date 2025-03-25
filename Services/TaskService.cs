@@ -68,7 +68,6 @@ namespace Blazor.Services
             }
         }
 
-        
 
         /*
         Metoda pro smazání seznamu úkolů podle názvu

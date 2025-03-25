@@ -27,7 +27,11 @@
     <div class="add-task-list-column">
         @if (showAddTaskListInput)
         {
-            <AddTaskListForm OnTaskListAdded="HandleTaskListAdded" ExistingTaskLists="@GetTaskLists()" />
+            
+            <AddForm OnSubmit="HandleTaskListAdded" 
+                 PlaceholderText="Zadejte název seznamu" 
+                 ButtonText="Přidat seznam"
+                 ExistingNames="@GetTaskLists().Select(t => t.Name).ToList()" />
         }
         else
         {
