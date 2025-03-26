@@ -193,7 +193,7 @@ V této části doplníme funkcionalitu umožňující přesouvání úkolů mez
 ### 1. Přidání metody `MoveTask` do `TaskService.cs`
 Nejprve vytvoříme metodu, která se postará o přesun úkolu mezi seznamy.
 
-📄 **Soubor:** `TaskService.cs`
+**Soubor:** `TaskService.cs`
 
 ```csharp
 public void MoveTask(TaskModel task, string targetTaskListName)
@@ -224,7 +224,7 @@ public void MoveTask(TaskModel task, string targetTaskListName)
 ### 2. Volání MoveTask v Todo.razor
 Nyní vytvoříme metodu, která bude volat `MoveTask` z `TaskService`.
 
-📄 **Soubor**: `Todo.razor`
+ **Soubor**: `Todo.razor`
 
 ```csharp
 private void HandleMoveTask((TaskModel task, string targetTaskList) moveTask)
@@ -238,7 +238,7 @@ private void HandleMoveTask((TaskModel task, string targetTaskList) moveTask)
 ### 3. Přidání podpory pro přesun úkolů do `TaskList.razor`
 V TaskList.razor potřebujeme předat metodu HandleMoveTask dětem (TaskItemDetails), aby mohly úkol přesunout.
 
-📄 **Soubor**: `TaskItemDetails.razor`
+**Soubor**: `TaskItemDetails.razor`
 
 ```razor
 <TaskItemDetails Task="selectedTask" OnClose="CloseDetails" 
@@ -254,7 +254,7 @@ V TaskList.razor potřebujeme předat metodu HandleMoveTask dětem (TaskItemDeta
 ### 4. Implementace přesunu v `TaskItemDetails.razor`
 V `TaskItemDetails.razor` musíme přidat UI pro výběr cílového seznamu a tlačítko pro přesun.
 
-📄 **Soubor**: `TaskItemDetails.razor`
+**Soubor**: `TaskItemDetails.razor`
 
 ```razor
 <div class="task-actions mt-4">
@@ -317,13 +317,26 @@ Vytvoř novou Blazor stránku, která umožní uživateli:
 
 - Použij **`@bind`** k obousměrnému svázání vstupu.
 - Ulož poznámky do **`List<string>`** a vykresli je pomocí **`@foreach`**.
-
+- Vše jde udělat v jedný razor stránce
 </details>
 
 ---
+# Cvičení 2: Stopky
+### Zadání
+Vytoř Blazor stránku, která umožní:
+1. **Spustit/Zastavit stopky**
+2. **Resetovat čas ve stopkách**
+3. **Zaznamenávat a zobrazovat mezičasy**
+4. **Možnost smazat jednotlivý mezičas nebo všechny najednou**
 
+<details>
+  <summary>💡 Nápověda</summary>
 
-# Cvičení 2: Galerie obrázků
+- 
+</details>
+---
+# Cvičení 3: Galerie obrázků
+### Zadání
 Vytvoř Blazor stránku, která umožní:
 1. **Načíst obrázky**
 2. **Vykreslit obrázky**
