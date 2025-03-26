@@ -1,4 +1,3 @@
-**Blazor**
 
 # Projekt pro předmět GUI zaměřený na .NET Blazor
 <details>
@@ -157,17 +156,17 @@ dotnet watch run
 ```mermaid
 sequenceDiagram
     participant User as Uživatel
-    participant AddTaskForm as AddTaskForm.razor
+    participant AddForm as AddForm.razor
     participant TaskList as TaskList.razor
     participant TaskService as TaskService.cs
 
     User->>TaskList: Klikne na tlačítko "+ Přidat úkol"
-    TaskList->>User: Zobrazí AddTaskForm komponentu
-    User->>AddTaskForm: Napíše název úkolu a klikne na "Přidat úkol"
+    TaskList->>User: Zobrazí AddForm komponentu
+    User->>AddForm: Napíše název úkolu a klikne na "Přidat úkol"
     
     alt Název úkolu není prázdný
-        AddTaskForm->>TaskList: OnTaskAdded.InvokeAsync(newTaskText) (EventCallback)
-        Note right of AddTaskForm: Vyvolání události pro TaskList
+        AddForm->>TaskList: OnTaskAdded.InvokeAsync(newTaskText) (EventCallback)
+        Note right of AddForm: Vyvolání události pro TaskList
         
         TaskList->>TaskService: AddTask(taskListModel.Name, newTaskText)
         Note right of TaskService: Vytvoření instance TaskModel
@@ -178,7 +177,7 @@ sequenceDiagram
         
         TaskList-->>User: Zobrazí aktualizovaný seznam úkolů
     else Název úkolu je prázdný
-        AddTaskForm-->>User: Zobrazí chybovou hlášku "Název úkolu nesmí být prázdný."
+        AddForm-->>User: Zobrazí chybovou hlášku "Název úkolu nesmí být prázdný."
     end
 ```
 
@@ -238,7 +237,7 @@ private void HandleMoveTask((TaskModel task, string targetTaskList) moveTask)
 ### 3. Přidání podpory pro přesun úkolů do `TaskList.razor`
 V TaskList.razor potřebujeme předat metodu HandleMoveTask dětem (TaskItemDetails), aby mohly úkol přesunout.
 
-**Soubor**: `TaskItemDetails.razor`
+**Soubor**: `TaskList.razor`
 
 ```razor
 <TaskItemDetails Task="selectedTask" OnClose="CloseDetails" 
@@ -283,7 +282,10 @@ V `TaskItemDetails.razor` musíme přidat UI pro výběr cílového seznamu a tl
 
     protected override void OnParametersSet()
     {
-        selectedTaskListName = Task.TaskListName;
+        if (Task != null)
+        {
+            selectedTaskListName = Task.TaskListName;
+        }
     }
 
     private async Task MoveTask()
@@ -303,13 +305,14 @@ V `TaskItemDetails.razor` musíme přidat UI pro výběr cílového seznamu a tl
 
 ---
 
-# Cvičení 1: Jednoduchý poznámkový blok
+# Cvičení 1: Poznámkový blok
 
 ### Zadání:
 Vytvoř novou Blazor stránku, která umožní uživateli:
 1. **Přidat** novou poznámku.
-2. **Smazat** existující poznámku.
-3. **Upravit** existující poznámku.
+2. **Zobrazit** vytvořené poznámky.
+3. **Smazat** existující poznámku.
+4. **Upravit** existující poznámku.
 
 
 <details>
@@ -318,6 +321,84 @@ Vytvoř novou Blazor stránku, která umožní uživateli:
 - Použij **`@bind`** k obousměrnému svázání vstupu.
 - Ulož poznámky do **`List<string>`** a vykresli je pomocí **`@foreach`**.
 - Vše jde udělat v jedný razor stránce
+</details>
+
+<details>
+    <summary>Část řešení</summary>
+    
+```razor
+@page "/notepad"
+<PageTitle>Notepad</PageTitle>
+<h3>Notepad</h3>
+
+<div class="mb-3">
+    <TextAreaInput/>
+    <Button>Add</Button>
+</div>
+
+<div class="mb-3"></div>
+<ul class="list-group">
+    @foreach (var note in Notes)
+    {
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+            @if (note.IsEditing)
+            {
+                <TextInput/>
+                <Button>Save</Button>
+            }
+            else
+            {
+                <div class="note-text">
+                    @note.Text
+                </div>
+                <div>
+                    <Button>✏️</Button>
+                    <Button>🗑️</Button>
+                </div>
+            }
+        </li>
+    }
+</ul>
+
+@code {
+    private List<Note> Notes = new();
+    private string newNoteText = "";
+ 
+    private void AddNote()
+    {
+        ...
+    }
+
+    private void RemoveNote(Note note)
+    {
+        ...
+    }
+
+    private void EditNote(Note note)
+    {
+        ...
+    }
+
+    private void SaveEdit(Note note)
+    {
+        ...
+    }
+
+    private class Note
+    {
+        ...
+    }
+}
+
+<style>
+    .note-text {
+        max-height: 100px; 
+        overflow: auto;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+    }
+</style>
+```
 </details>
 
 ---
@@ -335,6 +416,153 @@ Vytoř Blazor stránku, která umožní:
 - Použij komponentu `System.Timers.Timer` pro aktualizaci času.
 - Stopky mohou používat `TimeSpan` pro uchování naměřeného času.
 - Pro zobrazení mezičasů lze použít `List<string>`.
+</details>
+
+
+<details>
+    <summary>Část řešení</summary>
+
+```razor
+@page "/stopwatch"
+@rendermode InteractiveServer
+
+<PageTitle>StopWatch</PageTitle>
+
+<h3 style="text-align: center;">⏱ Stopwatch</h3>
+
+<div class="stopwatch">
+    <p>Time: ...</p>
+
+    <button>
+        @(isRunning ? "⏸ Pause" : "▶ Start")
+    </button>
+    <button>⏹ Reset</button>
+    <button>📍 Add Lap</button>
+    <button>Clear Laps</button>
+
+    @if (laps.Count > 0)
+    {
+        <h4>Laps:</h4>
+        <ul>
+            @foreach (var lap in laps)
+            {
+                <li>
+                    @lap
+                    <button @onclick="() => RemoveLap(lap)">🗑</button>
+                </li>
+            }
+        </ul>
+    }
+</div>
+
+
+@code {
+    private bool isRunning = false;
+    private TimeSpan elapsed = TimeSpan.Zero;
+    private System.Timers.Timer timer;
+    private DateTime startTime;
+    private List<string> laps = new();
+
+    private string formattedTime => elapsed.ToString(@"hh\:mm\:ss\.ff");
+
+    protected override void OnInitialized()
+    {
+        ...
+    }
+
+    private void ToggleTimer()
+    {
+        ...
+    }
+
+    private void OnTimerElapsed(object? sender, System.Timers.ElapsedEventArgs e)
+    {
+        ...
+    }
+
+    private void Reset()
+    {
+        ...
+    }
+
+    private void AddLap()
+    {
+        ...
+    }
+
+    private void RemoveLap(string lap)
+    {
+        ...
+    }
+
+    private void ClearLaps()
+    {
+        ...
+    }
+
+    public void Dispose()
+    {
+        ...
+    }
+}
+
+
+<style>
+    .stopwatch {
+        max-width: 500px;
+        margin: 20px auto;
+        padding: 20px;
+        background: #f5f5f5;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        font-family: Arial, sans-serif;
+    }
+
+    .stopwatch p {
+        font-size: 2em;
+        text-align: center;
+        margin: 10px 0;
+    }
+
+    .stopwatch button {
+        margin: 5px;
+        padding: 8px 12px;
+        font-size: 1em;
+        border: none;
+        border-radius: 5px;
+        background-color: #007bff;
+        color: white;
+        cursor: pointer;
+    }
+
+    .stopwatch button:disabled {
+        background-color: #aaa;
+        cursor: not-allowed;
+    }
+
+    .stopwatch ul {
+        list-style-type: none;
+        padding: 0;
+    }
+
+    .stopwatch li {
+        margin: 5px 0;
+        padding: 5px;
+        background-color: #eee;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-radius: 5px;
+    }
+
+    .stopwatch li button {
+        background-color: #dc3545;
+        padding: 4px 8px;
+        font-size: 0.9em;
+    }
+</style>
+
+```
 </details>
 
 ---
