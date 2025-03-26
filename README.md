@@ -305,7 +305,7 @@ V `TaskItemDetails.razor` musíme přidat UI pro výběr cílového seznamu a tl
 
 # Cvičení 1: Jednoduchý poznámkový blok
 
-### Zadání
+### Zadání:
 Vytvoř novou Blazor stránku, která umožní uživateli:
 1. **Přidat** novou poznámku.
 2. **Smazat** existující poznámku.
@@ -322,7 +322,7 @@ Vytvoř novou Blazor stránku, která umožní uživateli:
 
 ---
 # Cvičení 2: Stopky
-### Zadání
+### Zadání:
 Vytoř Blazor stránku, která umožní:
 1. **Spustit/Zastavit stopky**
 2. **Resetovat čas ve stopkách**
@@ -331,12 +331,137 @@ Vytoř Blazor stránku, která umožní:
 
 <details>
   <summary>💡 Nápověda</summary>
-
-- 
+    
+- Použij komponentu `System.Timers.Timer` pro aktualizaci času.
+- Stopky mohou používat `TimeSpan` pro uchování naměřeného času.
+- Pro zobrazení mezičasů lze použít `List<string>`.
 </details>
+
 ---
-# Cvičení 3: Galerie obrázků
-### Zadání
+# Cvičení 3: Kolotoč obrázků
+### Zadání:
+Vytvoř Blazor stránku, která umožní:
+1. **Automaticky mění obrázky každé 3 sekundy**
+2. **Umožňuje manuální přepínání mezi obrázky tlačítky**
+3. **Načítá obrázky** z dané složky (`wwwroot/images/gallery`)
+4. **Podporuje nekonečné přepínání** – přechod z posledního obrázku na první a naopak.
+
+
+<details>
+  <summary>💡 Nápověda</summary>
+    
+- Použij `System.Timers.Timer` pro automatické přepínání.
+- Cesty k obrázkům uprav na relativní (`/images/gallery/image.jpg`)
+- `StateHasChanged()` způsobí překreslení komponenty při změně obrázku.
+- Pro zamezení memory leaků zruš timer v `Dispose()`.
+</details>
+
+
+<details>
+  <summary>Část řešení</summary>
+
+**1. Vytvoř komponentu (`ImageCarousel.razor`)**
+
+```razor
+@inject IWebHostEnvironment env  
+
+<div class="carousel">  
+    <button class="prev" @onclick="Previous">❮</button>  
+    <img src="@images[activeIndex]" class="carousel-image" />  
+    <button class="next" @onclick="Next">❯</button>  
+</div>  
+```
+**2. Logika komponenty (`@code blok`)**
+
+```razor
+@code {  
+    [Parameter]  
+    public string WorkFolder { get; set; } = "images/gallery";  
+
+    private int activeIndex = 0;  
+    private List<string> images = new();  
+    private System.Timers.Timer? timer;  
+
+    protected override void OnInitialized()  
+    {  
+        string fullPath = Path.Combine(env.WebRootPath, WorkFolder.Replace("/", Path.DirectorySeparatorChar.ToString()));  
+        if (Directory.Exists(fullPath))  
+        {  
+            images = Directory.GetFiles(fullPath, "*.jpg").Select(img =>  
+                Path.Combine("/", WorkFolder, Path.GetFileName(img))).ToList();  
+        }  
+
+        timer = new System.Timers.Timer(3000);  
+        timer.Elapsed += (sender, e) => InvokeAsync(Next);  
+        timer.AutoReset = true;  
+        timer.Start();  
+    }  
+
+    private void Next()  
+    {  
+        ...;
+    }  
+
+    private void Previous()  
+    {  
+        ...;
+    }  
+
+    private void RestartTimer()  
+    {
+        ...;
+    }  
+
+    public void Dispose() => timer?.Dispose();  
+}  
+```
+
+**3. Styly pro vizuální úpravu (`<style>`)**
+```css
+<style>  
+    .carousel {  
+        position: relative;  
+        width: 800px;  
+        height: 400px;  
+        margin: auto;  
+        overflow: hidden;  
+    }  
+
+    .carousel-image {  
+        width: 100%;  
+        height: 100%;  
+        object-fit: cover;  
+        border-radius: 10px;  
+    }  
+
+    .prev,  
+    .next {  
+        position: absolute;  
+        top: 50%;  
+        transform: translateY(-50%);  
+        background: rgba(0, 0, 0, 0.5);  
+        color: white;  
+        border: none;  
+        padding: 10px;  
+        cursor: pointer;  
+        font-size: 20px;  
+    }  
+
+    .prev {  
+        left: 10px;  
+    }  
+
+    .next {  
+        right: 10px;  
+    }  
+</style>  
+```
+</details>
+
+---
+
+# Cvičení 4: Galerie obrázků
+### Zadání:
 Vytvoř Blazor stránku, která umožní:
 1. **Načíst obrázky**
 2. **Vykreslit obrázky**
@@ -356,7 +481,7 @@ Vytvoř Blazor stránku, která umožní:
 <details>
   <summary>Část řešení</summary>
 
-1. Vytvoříme si razor stránku, kde budeme naší galerii volat
+**1. Vytvoříme si razor stránku, kde budeme naší galerii volat**
 ```razor
 @page "/gallery"
 
@@ -365,7 +490,8 @@ Vytvoř Blazor stránku, která umožní:
 <ImageGrid />
 ```
 
-2. Vytvoříme komponentu `ImageGrid.razor`
+2. **Vytvoříme komponentu `ImageGrid.razor`**
+
     - název je volitelný, ale potřeba upravit i v předešlém kroku
 
     <details>
@@ -417,31 +543,30 @@ Vytvoř Blazor stránku, která umožní:
     ```
     </details>
 
-    ## Kód je zde trochu delší, ale pojďme si ho rozklíčovat:
+    ### Kód je zde trochu delší, ale pojďme si ho rozklíčovat:
 
-    ### `OnInitializedAsync`
+    **`OnInitializedAsync`**
     - Spouští se automaticky při inicializaci komponenty.
 
-    ### `OpenImage`
+    **`OpenImage`**
     - Otevře náhled konkrétního obrázku.
 
-    ### `FocusOverlay`
+    **`FocusOverlay`**
     - Zaostří overlay prvek kvůli ovládání klávesnicí.
 
-    ### `CloseImage`
+    **`CloseImage`**
     - Zavře náhled obrázku (overlay).
 
-    ### `PreviousImage`
+    **`PreviousImage`**
     - Posune výběr na předchozí obrázek.
 
-    ### `NextImage`
+    **`NextImage`**
     - Posune výběr na další obrázek.
 
-    ### `HandleKeyDown`
+    **`HandleKeyDown`**
     - Zpracovává stisknuté klávesy při aktivním overlay.
 
-    ## Stále v naší komponentě udělejme strukturu stránky:
-
+3. **Dále v naší komponentě udělejme strukturu stránky**
 
     <details>
         <summary>Kód</summary>
@@ -477,7 +602,7 @@ Vytvoř Blazor stránku, která umožní:
     ``` 
     </details>
 
-    ## Stále v naší komponentě udělejme vzhled stránky:
+4. **Dále v naší komponentě udělejme vzhled stránky:**
 
 
     <details>
