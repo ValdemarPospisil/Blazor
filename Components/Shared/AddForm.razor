@@ -40,7 +40,7 @@
 
         await OnSubmit.InvokeAsync(inputText);
         inputText = string.Empty;
-        errorMessage = null; // Reset chyby
+        errorMessage = string.Empty; // Reset chyby
     }
 
     private async Task HandleKeyPress(KeyboardEventArgs e)
