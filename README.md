@@ -324,10 +324,10 @@ Vytvoř novou Blazor stránku, která umožní uživateli:
 # Cvičení 2: Stopky
 ### Zadání:
 Vytoř Blazor stránku, která umožní:
-1. **Spustit/Zastavit stopky**
-2. **Resetovat čas ve stopkách**
-3. **Zaznamenávat a zobrazovat mezičasy**
-4. **Možnost smazat jednotlivý mezičas nebo všechny najednou**
+1. **Spustit/Zastavit** stopky
+2. **Resetovat čas** ve stopkách
+3. **Zaznamenávat a zobrazovat** mezičasy
+4. Možnost **smazat** jednotlivý mezičas nebo všechny najednou
 
 <details>
   <summary>💡 Nápověda</summary>
@@ -341,8 +341,8 @@ Vytoř Blazor stránku, která umožní:
 # Cvičení 3: Kolotoč obrázků
 ### Zadání:
 Vytvoř Blazor stránku, která umožní:
-1. **Automaticky mění obrázky každé 3 sekundy**
-2. **Umožňuje manuální přepínání mezi obrázky tlačítky**
+1. **Automaticky mění obrázky** každé 3 sekundy
+2. **Umožňuje manuální přepínání** mezi obrázky tlačítky
 3. **Načítá obrázky** z dané složky (`wwwroot/images/gallery`)
 4. **Podporuje nekonečné přepínání** – přechod z posledního obrázku na první a naopak.
 
@@ -463,10 +463,10 @@ Vytvoř Blazor stránku, která umožní:
 # Cvičení 4: Galerie obrázků
 ### Zadání:
 Vytvoř Blazor stránku, která umožní:
-1. **Načíst obrázky**
-2. **Vykreslit obrázky**
+1. **Načíst** obrázky
+2. **Vykreslit** obrázky
 3. **Prohlédnout konkrétní obrázek**
-4. **Klávesové ovládání prohlížení obrázků**
+4. **Klávesové ovládání** prohlížení obrázků
 4. **Subúkol**: mansory rozložení pomocí blazoru a čistého css
 
 
